@@ -27,7 +27,34 @@ import {
   ArrowUpRight,
   UserPlus,
   ClipboardCheck,
+  Music,
+  HeartHandshake,
+  Leaf,
+  Sun,
+  MapPin,
+  Clock,
+  BarChart3,
+  PieChart,
+  Activity,
+  Star,
+  GraduationCap,
+  FileText,
 } from 'lucide-react'
+import {
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  PieChart as RechartsPie,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts'
 import { cn, formatCurrency } from '@/lib/utils'
 import {
   useDashboardStats,
@@ -63,6 +90,7 @@ const LEADERSHIP_TEAM = [
     joined: 'Aug 2025',
     status: 'Active',
     bio: 'BA in Interpersonal Communications, 30+ years music ministry, CalPERS analyst, certified natural health & homeopathy',
+    color: 'purple' as const,
   },
   {
     name: 'Michael C. Ward',
@@ -72,6 +100,7 @@ const LEADERSHIP_TEAM = [
     joined: 'Aug 2025',
     status: 'Active',
     bio: 'Elder board member, multi-generational stewardship',
+    color: 'emerald' as const,
   },
   {
     name: 'To Be Appointed',
@@ -81,6 +110,7 @@ const LEADERSHIP_TEAM = [
     joined: '--',
     status: 'Pending',
     bio: 'Position open for qualified elder candidate',
+    color: 'amber' as const,
   },
 ] as const
 
@@ -95,26 +125,55 @@ const FALLBACK_COMPLIANCE = [
 ] as const
 
 const MONTHLY_GIVING = [
-  { month: 'Apr', value: 1200 },
-  { month: 'May', value: 1850 },
-  { month: 'Jun', value: 2400 },
-  { month: 'Jul', value: 1950 },
-  { month: 'Aug', value: 3200 },
-  { month: 'Sep', value: 2800 },
-  { month: 'Oct', value: 3600 },
-  { month: 'Nov', value: 4100 },
-  { month: 'Dec', value: 5200 },
-  { month: 'Jan', value: 3800 },
-  { month: 'Feb', value: 4500 },
-  { month: 'Mar', value: 4900 },
+  { month: 'Apr', value: 1200, donations: 8, beneficiaries: 3 },
+  { month: 'May', value: 1850, donations: 12, beneficiaries: 5 },
+  { month: 'Jun', value: 2400, donations: 15, beneficiaries: 7 },
+  { month: 'Jul', value: 1950, donations: 11, beneficiaries: 4 },
+  { month: 'Aug', value: 3200, donations: 18, beneficiaries: 9 },
+  { month: 'Sep', value: 2800, donations: 16, beneficiaries: 8 },
+  { month: 'Oct', value: 3600, donations: 22, beneficiaries: 11 },
+  { month: 'Nov', value: 4100, donations: 25, beneficiaries: 14 },
+  { month: 'Dec', value: 5200, donations: 32, beneficiaries: 18 },
+  { month: 'Jan', value: 3800, donations: 20, beneficiaries: 12 },
+  { month: 'Feb', value: 4500, donations: 28, beneficiaries: 15 },
+  { month: 'Mar', value: 4900, donations: 30, beneficiaries: 17 },
 ]
+
+const PROGRAM_DISTRIBUTION = [
+  { name: 'Healing Ministry', value: 28, color: '#F43F5E' },
+  { name: 'Music & Worship', value: 22, color: '#7C3AED' },
+  { name: 'Life Coaching', value: 18, color: '#0EA5E9' },
+  { name: 'Food Ministry', value: 15, color: '#10B981' },
+  { name: 'Community Outreach', value: 12, color: '#F59E0B' },
+  { name: 'Education', value: 5, color: '#6366F1' },
+]
+
+const QUICK_ACTIONS = [
+  { icon: DollarSign, label: 'Record Donation', description: 'Log a new gift', href: '/dashboard/donations', color: 'emerald' as const },
+  { icon: Receipt, label: 'Generate Receipt', description: 'Donor tax receipt', href: '/dashboard/tax-documents', color: 'amber' as const },
+  { icon: UserPlus, label: 'Add Beneficiary', description: 'New partner org', href: '/dashboard/partner-churches', color: 'sky' as const },
+  { icon: CalendarPlus, label: 'Schedule Event', description: 'Ministry calendar', href: '/dashboard/events', color: 'rose' as const },
+  { icon: Upload, label: 'Upload Document', description: 'Trust documents', href: '/dashboard/documents', color: 'purple' as const },
+  { icon: Shield, label: 'View Compliance', description: 'IRS factor status', href: '/dashboard/compliance', color: 'teal' as const },
+] as const
+
+const ICON_COLOR_MAP = {
+  purple: { bg: 'bg-primary-100', text: 'text-primary-600', hover: 'hover:bg-primary-50', border: 'hover:border-primary-300' },
+  emerald: { bg: 'bg-emerald-100', text: 'text-emerald-600', hover: 'hover:bg-emerald-50', border: 'hover:border-emerald-300' },
+  amber: { bg: 'bg-amber-100', text: 'text-amber-600', hover: 'hover:bg-amber-50', border: 'hover:border-amber-300' },
+  rose: { bg: 'bg-rose-100', text: 'text-rose-600', hover: 'hover:bg-rose-50', border: 'hover:border-rose-300' },
+  sky: { bg: 'bg-sky-100', text: 'text-sky-600', hover: 'hover:bg-sky-50', border: 'hover:border-sky-300' },
+  teal: { bg: 'bg-teal-100', text: 'text-teal-600', hover: 'hover:bg-teal-50', border: 'hover:border-teal-300' },
+  gold: { bg: 'bg-amber-100', text: 'text-amber-700', hover: 'hover:bg-amber-50', border: 'hover:border-amber-300' },
+  indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600', hover: 'hover:bg-indigo-50', border: 'hover:border-indigo-300' },
+} as const
 
 // ---------------------------------------------------------------------------
 // Dashboard Page
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
-  const [chartPeriod, setChartPeriod] = useState<'month' | 'quarter' | 'year'>('year')
+  const [chartType, setChartType] = useState<'area' | 'bar'>('area')
   const [txPage, setTxPage] = useState(0)
   const [activityText, setActivityText] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -125,10 +184,7 @@ export default function DashboardPage() {
   const { data: compliance } = useCompliance()
   const { data: volunteers } = useVolunteers()
 
-  // ---------------------------------------------------------------------------
   // Derived data
-  // ---------------------------------------------------------------------------
-
   const totalGiving = stats?.stats?.totalDonations || 0
   const partnerCount = stats?.stats?.partnersCount || partners?.length || 28
   const activeVolunteers = stats?.stats?.activeVolunteers || volunteers?.filter(v => v.status === 'active').length || 0
@@ -167,38 +223,67 @@ export default function DashboardPage() {
   const completedCount = complianceItems.filter((c) => c.status === 'complete').length
   const compliancePercent = Math.round((completedCount / complianceItems.length) * 100)
 
-  // Chart data
-  const maxChartValue = Math.max(...MONTHLY_GIVING.map((m) => m.value))
-
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
+  const now = new Date()
+  const greeting =
+    now.getHours() < 12 ? 'Good Morning' : now.getHours() < 17 ? 'Good Afternoon' : 'Good Evening'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       {/* ================================================================== */}
-      {/* 1. WELCOME BANNER                                                  */}
+      {/* 1. WELCOME BANNER - Rich gradient with decorative elements         */}
       {/* ================================================================== */}
-      <div className="rounded-xl p-6 md:p-8 text-white bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 relative overflow-hidden">
-        {/* Decorative circles */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+      <div className="animate-in rounded-2xl p-6 md:p-8 text-white relative overflow-hidden" style={{
+        background: 'linear-gradient(135deg, #581C87 0%, #7C3AED 30%, #4338CA 60%, #312E81 100%)'
+      }}>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-amber-400/10 rounded-full" />
 
-        <div className="relative z-10">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-            Welcome to Sacred Revelation
-          </h1>
-          <p className="mt-1 text-purple-200 text-sm md:text-base">
-            508(c)(1)(A) Free Church Ministry Trust &middot; Sacramento, California
-          </p>
-          <p className="mt-4 text-purple-100/90 italic text-sm max-w-xl">
-            {SCRIPTURE_VERSE}
-          </p>
+        {/* Gold accent line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent opacity-60" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-xl bg-white/10 backdrop-blur-sm">
+                <Sun className="w-6 h-6 text-amber-300" />
+              </div>
+              <span className="text-sm font-medium text-purple-200">{greeting}</span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+              Welcome to Sacred Revelation
+            </h1>
+            <p className="mt-1 text-purple-200 text-sm md:text-base">
+              508(c)(1)(A) Free Church Ministry Trust &middot; Sacramento, California
+            </p>
+            <p className="mt-4 text-purple-100/80 italic text-sm max-w-xl leading-relaxed">
+              {SCRIPTURE_VERSE}
+            </p>
+          </div>
+
+          {/* Quick info cards */}
+          <div className="flex flex-wrap gap-3">
+            <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-amber-300" />
+                <span className="text-sm font-medium text-white">Sacramento, CA</span>
+              </div>
+            </div>
+            <div className="px-4 py-2.5 rounded-xl bg-white/10 backdrop-blur-sm border border-white/10">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-300" />
+                <span className="text-sm font-medium text-white">
+                  {now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ================================================================== */}
-      {/* 2. STATS GRID                                                      */}
+      {/* 2. STATS GRID - Multi-color gradient cards                         */}
       {/* ================================================================== */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -207,6 +292,8 @@ export default function DashboardPage() {
           value={statsLoading ? null : formatCurrency(totalGiving)}
           subtitle="year-to-date"
           loading={statsLoading}
+          color="emerald"
+          trend="+24%"
         />
         <StatCard
           icon={Church}
@@ -214,6 +301,8 @@ export default function DashboardPage() {
           value={statsLoading ? null : partnerCount.toString()}
           subtitle="churches & beneficiaries"
           loading={statsLoading}
+          color="purple"
+          trend="+3"
         />
         <StatCard
           icon={Users}
@@ -221,6 +310,8 @@ export default function DashboardPage() {
           value={statsLoading ? null : activeVolunteers.toString()}
           subtitle="serving this month"
           loading={statsLoading}
+          color="sky"
+          trend="+12"
         />
         <StatCard
           icon={Sparkles}
@@ -228,88 +319,188 @@ export default function DashboardPage() {
           value={statsLoading ? null : programCount.toString()}
           subtitle="active programs"
           loading={statsLoading}
+          color="amber"
         />
       </div>
 
       {/* ================================================================== */}
-      {/* 3. TWO-COLUMN: CHART + MINISTRY INFO                              */}
+      {/* 3. CHARTS ROW - Giving chart + Program distribution                */}
       {/* ================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* --- Ministry Impact Chart --- */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* --- Ministry Giving Chart (2/3 width) --- */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-1">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Ministry Giving Impact</h2>
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              {(['month', 'quarter', 'year'] as const).map((period) => (
-                <button
-                  key={period}
-                  onClick={() => setChartPeriod(period)}
-                  className={cn(
-                    'px-3 py-1 text-sm font-medium rounded-md transition-colors capitalize',
-                    chartPeriod === period
-                      ? 'bg-purple-500 text-white'
-                      : 'text-gray-600 hover:text-gray-900'
-                  )}
-                >
-                  {period}
-                </button>
-              ))}
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Ministry Giving Impact</h2>
+              <p className="text-sm text-slate-500 mt-0.5">Monthly donation trends and growth</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setChartType('area')}
+                className={cn(
+                  'p-2 rounded-lg transition-colors',
+                  chartType === 'area'
+                    ? 'bg-primary-100 text-primary-700'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                )}
+                title="Area chart"
+              >
+                <Activity className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setChartType('bar')}
+                className={cn(
+                  'p-2 rounded-lg transition-colors',
+                  chartType === 'bar'
+                    ? 'bg-primary-100 text-primary-700'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                )}
+                title="Bar chart"
+              >
+                <BarChart3 className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          {/* Bar chart */}
-          <div className="h-48 flex items-end gap-1.5">
-            {MONTHLY_GIVING.map((item) => (
-              <div key={item.month} className="flex-1 flex flex-col items-center">
-                <div
-                  className="w-full rounded-t-md bg-purple-500 hover:bg-purple-600 transition-colors cursor-pointer"
-                  style={{ height: `${(item.value / maxChartValue) * 100}%` }}
-                  title={`${item.month}: ${formatCurrency(item.value)}`}
-                />
-                <span className="text-[10px] sm:text-xs text-gray-500 mt-2">{item.month}</span>
-              </div>
-            ))}
+          {/* Recharts */}
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              {chartType === 'area' ? (
+                <AreaChart data={MONTHLY_GIVING} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorGiving" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#7C3AED" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#7C3AED"
+                    strokeWidth={2.5}
+                    fill="url(#colorGiving)"
+                  />
+                </AreaChart>
+              ) : (
+                <BarChart data={MONTHLY_GIVING} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                  <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: '#64748B' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {MONTHLY_GIVING.map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index === MONTHLY_GIVING.length - 1 ? '#D4A84B' : '#7C3AED'}
+                        fillOpacity={0.85}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              )}
+            </ResponsiveContainer>
           </div>
 
           {/* Summary row */}
-          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-100">
+          <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-slate-100">
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-900">
+              <p className="text-lg font-bold text-slate-900">
                 {formatCurrency(MONTHLY_GIVING.reduce((s, m) => s + m.value, 0))}
               </p>
-              <p className="text-xs text-gray-500">Total Given</p>
+              <p className="text-xs text-slate-500">Total Given</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-gray-900">28</p>
-              <p className="text-xs text-gray-500">Beneficiaries Served</p>
+              <p className="text-lg font-bold text-slate-900">28</p>
+              <p className="text-xs text-slate-500">Beneficiaries Served</p>
             </div>
             <div className="text-center">
-              <p className="text-lg font-bold text-purple-600">+24%</p>
-              <p className="text-xs text-gray-500">Growth</p>
+              <p className="text-lg font-bold text-emerald-600 flex items-center justify-center gap-1">
+                <TrendingUp className="w-4 h-4" />
+                +24%
+              </p>
+              <p className="text-xs text-slate-500">Growth</p>
             </div>
           </div>
         </div>
 
-        {/* --- Ministry Information Card --- */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 rounded-lg bg-purple-50">
-              <BookOpen className="w-5 h-5 text-purple-600" />
+        {/* --- Program Distribution Pie (1/3 width) --- */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-2">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-xl bg-indigo-100">
+              <PieChart className="w-5 h-5 text-indigo-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">Ministry Information</h2>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Programs</h2>
+              <p className="text-xs text-slate-500">Activity distribution</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <RechartsPie>
+                <Pie
+                  data={PROGRAM_DISTRIBUTION}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {PROGRAM_DISTRIBUTION.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => [`${value}%`, 'Share']} />
+              </RechartsPie>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="space-y-2 mt-2">
+            {PROGRAM_DISTRIBUTION.map((prog) => (
+              <div key={prog.name} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: prog.color }} />
+                  <span className="text-xs text-slate-600">{prog.name}</span>
+                </div>
+                <span className="text-xs font-semibold text-slate-900">{prog.value}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ================================================================== */}
+      {/* 4. MINISTRY INFO + QUICK ACTIONS ROW                               */}
+      {/* ================================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* --- Ministry Information Card --- */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-2">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-primary-100">
+              <BookOpen className="w-5 h-5 text-primary-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Ministry Information</h2>
+              <p className="text-xs text-slate-500">508(c)(1)(A) trust details</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
             <InfoRow label="Ministry Name" value={MINISTRY_INFO.name} />
             <InfoRow label="Formation Date" value={MINISTRY_INFO.formationDate} />
             <InfoRow label="EIN" value={MINISTRY_INFO.ein} />
             <InfoRow label="State" value={MINISTRY_INFO.state} />
             <InfoRow label="Structure" value={MINISTRY_INFO.structure} />
             <InfoRow label="Presiding Elder" value={MINISTRY_INFO.presidingElder} />
-            <div className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-              <span className="text-sm text-gray-500">Status</span>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+              <span className="text-sm text-slate-500">Status</span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 {MINISTRY_INFO.status}
               </span>
             </div>
@@ -317,68 +508,93 @@ export default function DashboardPage() {
 
           <a
             href="/dashboard/trust-data"
-            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
+            className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors"
           >
             View full trust record
-            <ExternalLink className="w-3 h-3" />
+            <ExternalLink className="w-3.5 h-3.5" />
           </a>
+        </div>
+
+        {/* --- Quick Actions Grid --- */}
+        <div className="animate-in-delay-3">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2.5 rounded-xl bg-amber-100">
+              <Star className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Quick Actions</h2>
+              <p className="text-xs text-slate-500">Common tasks at a glance</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {QUICK_ACTIONS.map((action) => (
+              <QuickActionCard
+                key={action.label}
+                icon={action.icon}
+                label={action.label}
+                description={action.description}
+                href={action.href}
+                color={action.color}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ================================================================== */}
-      {/* 4. RECENT TRANSACTIONS TABLE                                       */}
+      {/* 5. RECENT TRANSACTIONS TABLE                                       */}
       {/* ================================================================== */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-3">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
-          <span className="text-sm text-gray-500">
-            {donations?.length || 0} total
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-100">
+              <DollarSign className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Recent Transactions</h2>
+              <p className="text-xs text-slate-500">{donations?.length || 0} total records</p>
+            </div>
+          </div>
+          <a
+            href="/dashboard/donations"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-primary-600 hover:bg-primary-50 rounded-xl transition-colors"
+          >
+            View All
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </a>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Donor
-                </th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Category
-                </th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="text-right py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="text-left py-3 px-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+              <tr className="border-b border-slate-100">
+                <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Donor</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Category</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
+                <th className="text-right py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                <th className="text-left py-3 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody>
               {donationsLoading ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-purple-500 mx-auto" />
-                    <p className="text-sm text-gray-500 mt-2">Loading transactions...</p>
+                    <Loader2 className="w-6 h-6 animate-spin text-primary-500 mx-auto" />
+                    <p className="text-sm text-slate-500 mt-2">Loading transactions...</p>
                   </td>
                 </tr>
               ) : paginatedTx.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="p-3 rounded-full bg-purple-50">
-                        <Heart className="w-6 h-6 text-purple-400" />
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="p-4 rounded-2xl bg-primary-50">
+                        <Heart className="w-8 h-8 text-primary-400" />
                       </div>
-                      <p className="text-sm font-medium text-gray-900">No transactions yet</p>
-                      <p className="text-xs text-gray-500">
-                        Record your first donation to get started.
-                      </p>
+                      <p className="text-sm font-semibold text-slate-900">No transactions yet</p>
+                      <p className="text-xs text-slate-500">Record your first donation to get started.</p>
                       <a
                         href="/dashboard/donations"
-                        className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 rounded-lg transition-colors"
+                        className="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-colors shadow-sm"
                       >
                         <Plus className="w-4 h-4" />
                         Record Donation
@@ -388,33 +604,27 @@ export default function DashboardPage() {
                 </tr>
               ) : (
                 paginatedTx.map((tx) => (
-                  <tr
-                    key={tx.id}
-                    className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors"
-                  >
+                  <tr key={tx.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="py-3 px-4">
-                      <p className="text-sm font-medium text-gray-900">{tx.name}</p>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{tx.category}</td>
-                    <td className="py-3 px-4 text-sm text-gray-600">{tx.date}</td>
-                    <td
-                      className={cn(
-                        'py-3 px-4 text-sm font-medium text-right',
-                        tx.amount >= 0 ? 'text-green-600' : 'text-red-600'
-                      )}
-                    >
-                      {tx.amount >= 0 ? '+' : ''}
-                      {formatCurrency(tx.amount)}
+                      <p className="text-sm font-medium text-slate-900">{tx.name}</p>
                     </td>
                     <td className="py-3 px-4">
-                      <span
-                        className={cn(
-                          'px-2 py-1 text-xs font-medium rounded-full',
-                          tx.status === 'Completed'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-yellow-100 text-yellow-700'
-                        )}
-                      >
+                      <span className="text-xs font-medium px-2 py-1 rounded-md bg-slate-100 text-slate-600">
+                        {tx.category}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-sm text-slate-500">{tx.date}</td>
+                    <td className={cn(
+                      'py-3 px-4 text-sm font-semibold text-right',
+                      tx.amount >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                    )}>
+                      {tx.amount >= 0 ? '+' : ''}{formatCurrency(tx.amount)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={cn(
+                        'px-2.5 py-1 text-xs font-semibold rounded-full',
+                        tx.status === 'Completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                      )}>
                         {tx.status}
                       </span>
                     </td>
@@ -426,30 +636,27 @@ export default function DashboardPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <p className="text-sm text-gray-500">
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
+          <p className="text-sm text-slate-500">
             {recentTransactions.length > 0
-              ? `Showing ${txPage * PAGE_SIZE + 1}-${Math.min(
-                  (txPage + 1) * PAGE_SIZE,
-                  recentTransactions.length
-                )} of ${recentTransactions.length}`
+              ? `Showing ${txPage * PAGE_SIZE + 1}-${Math.min((txPage + 1) * PAGE_SIZE, recentTransactions.length)} of ${recentTransactions.length}`
               : 'No records'}
           </p>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setTxPage((p) => Math.max(0, p - 1))}
               disabled={txPage === 0}
-              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-xs text-gray-500 min-w-[3rem] text-center">
+            <span className="text-xs text-slate-500 min-w-[3rem] text-center">
               {txPage + 1} / {totalTxPages}
             </span>
             <button
               onClick={() => setTxPage((p) => Math.min(totalTxPages - 1, p + 1))}
               disabled={txPage >= totalTxPages - 1}
-              className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -458,91 +665,117 @@ export default function DashboardPage() {
       </div>
 
       {/* ================================================================== */}
-      {/* 5. QUICK ACTIONS                                                    */}
+      {/* 6. MINISTRY PROGRAMS OVERVIEW                                      */}
       {/* ================================================================== */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <QuickActionCard
-          icon={DollarSign}
-          label="Record Donation"
-          description="Log a new gift"
-          href="/dashboard/donations"
-        />
-        <QuickActionCard
-          icon={Receipt}
-          label="Generate Receipt"
-          description="Donor tax receipt"
-          href="/dashboard/tax-documents"
-        />
-        <QuickActionCard
-          icon={UserPlus}
-          label="Add Beneficiary"
-          description="New partner org"
-          href="/dashboard/partner-churches"
-        />
-        <QuickActionCard
-          icon={CalendarPlus}
-          label="Schedule Event"
-          description="Ministry calendar"
-          href="/dashboard/events"
-        />
-        <QuickActionCard
-          icon={Upload}
-          label="Upload Document"
-          description="Trust documents"
-          href="/dashboard/documents"
-        />
-        <QuickActionCard
-          icon={Shield}
-          label="View Compliance"
-          description="IRS factor status"
-          href="/dashboard/compliance"
-        />
+      <div className="animate-in-delay-3">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2.5 rounded-xl bg-rose-100">
+            <Heart className="w-5 h-5 text-rose-600" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">Ministry Programs</h2>
+            <p className="text-xs text-slate-500">Love, hope, and healing through faith</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ProgramCard
+            icon={HeartHandshake}
+            title="Healing Ministry"
+            description="Prayer, laying on of hands, anointing, natural health counseling, and sound healing sessions"
+            href="/dashboard/healing-ministry"
+            color="rose"
+            stats="7 session types"
+          />
+          <ProgramCard
+            icon={Music}
+            title="Music & Worship"
+            description="Worship services, concerts, praise nights, recording sessions, and sound healing events"
+            href="/dashboard/music-worship"
+            color="purple"
+            stats="7 event types"
+          />
+          <ProgramCard
+            icon={GraduationCap}
+            title="Life Coaching"
+            description="Training, counseling, prayer mentoring, and assessment sessions for spiritual growth"
+            href="/dashboard/life-coaching"
+            color="sky"
+            stats="5 session types"
+          />
+          <ProgramCard
+            icon={Leaf}
+            title="Food Ministry"
+            description="Aquaponics, vertical gardens, food forest, and community food distribution programs"
+            href="/dashboard/1000lbs-of-food"
+            color="emerald"
+            stats="1,000 lbs goal"
+          />
+          <ProgramCard
+            icon={Church}
+            title="Community Outreach"
+            description="Partner church support, beneficiary distributions, and volunteer coordination"
+            href="/dashboard/partner-churches"
+            color="amber"
+            stats={`${partnerCount} partners`}
+          />
+          <ProgramCard
+            icon={FileText}
+            title="Elder Board"
+            description="Resolution tracking, board meeting minutes, and governance documentation"
+            href="/dashboard/elder-board"
+            color="indigo"
+            stats="Active governance"
+          />
+        </div>
       </div>
 
       {/* ================================================================== */}
-      {/* 6. COMPLIANCE + AI TOOLS                                            */}
+      {/* 7. COMPLIANCE + AI TOOLS                                           */}
       {/* ================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* --- Compliance Status --- */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Compliance Status</h2>
-            <span className="text-sm font-medium text-purple-600">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-teal-100">
+                <Shield className="w-5 h-5 text-teal-600" />
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Compliance Status</h2>
+            </div>
+            <span className="text-sm font-semibold text-primary-600">
               {completedCount}/{complianceItems.length} Complete
             </span>
           </div>
 
           {/* Progress bar */}
-          <div className="h-2.5 bg-gray-100 rounded-full mb-6 overflow-hidden">
+          <div className="h-3 bg-slate-100 rounded-full mb-6 overflow-hidden">
             <div
-              className="h-full rounded-full bg-purple-500 transition-all duration-500"
-              style={{ width: `${compliancePercent}%` }}
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${compliancePercent}%`,
+                background: 'linear-gradient(90deg, #7C3AED, #A855F7)',
+              }}
             />
           </div>
 
           {/* Checklist */}
           <div className="space-y-3">
             {complianceItems.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0"
-              >
+              <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                 <div className="flex items-center gap-3">
                   {item.status === 'complete' ? (
-                    <CheckCircle2 className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                   ) : (
-                    <Circle className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                    <Circle className="w-5 h-5 text-slate-300 flex-shrink-0" />
                   )}
-                  <span
-                    className={cn(
-                      'text-sm',
-                      item.status === 'complete' ? 'text-gray-900' : 'text-gray-600'
-                    )}
-                  >
+                  <span className={cn('text-sm', item.status === 'complete' ? 'text-slate-900 font-medium' : 'text-slate-500')}>
                     {item.label}
                   </span>
                 </div>
-                <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+                <span className={cn(
+                  'text-xs flex-shrink-0 ml-2 px-2 py-0.5 rounded-md',
+                  item.status === 'complete' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                )}>
                   {item.status === 'complete' ? item.date : `Due: ${item.dueDate}`}
                 </span>
               </div>
@@ -551,7 +784,7 @@ export default function DashboardPage() {
 
           <a
             href="/dashboard/compliance"
-            className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors"
           >
             View all compliance items
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -559,19 +792,22 @@ export default function DashboardPage() {
         </div>
 
         {/* --- AI-Powered Tools --- */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-4">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-purple-50">
-              <Sparkles className="w-5 h-5 text-purple-600" />
+            <div className="p-2.5 rounded-xl bg-primary-100">
+              <Sparkles className="w-5 h-5 text-primary-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">AI-Powered Tools</h2>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">AI-Powered Tools</h2>
+              <p className="text-xs text-slate-500">Smart ministry automation</p>
+            </div>
           </div>
 
           <div className="space-y-4">
             {/* Activity Logger */}
-            <div className="p-4 bg-purple-50/50 rounded-lg border border-purple-100">
-              <h3 className="text-sm font-medium text-gray-900 mb-1">Activity Logger</h3>
-              <p className="text-xs text-gray-500 mb-3">
+            <div className="p-4 rounded-xl border border-primary-100 bg-gradient-to-br from-primary-50/50 to-indigo-50/30">
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">Activity Logger</h3>
+              <p className="text-xs text-slate-500 mb-3">
                 Type a short note and let AI expand it into a full ministry activity record.
               </p>
               <input
@@ -579,18 +815,18 @@ export default function DashboardPage() {
                 value={activityText}
                 onChange={(e) => setActivityText(e.target.value)}
                 placeholder="e.g. worship service 45 members, healing prayer session..."
-                className="w-full px-3 py-2 text-sm border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white placeholder:text-gray-400"
+                className="w-full px-3 py-2.5 text-sm border border-primary-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 bg-white placeholder:text-slate-400"
               />
-              <div className="flex flex-wrap gap-2 mt-2.5">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {ACTIVITY_CATEGORIES.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}
                     className={cn(
-                      'px-2.5 py-1 text-xs rounded-md border transition-colors',
+                      'px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors cursor-pointer',
                       selectedCategory === cat
-                        ? 'bg-purple-500 text-white border-purple-500'
-                        : 'bg-white border-gray-200 text-gray-600 hover:border-purple-300'
+                        ? 'bg-primary-600 text-white border-primary-600'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-primary-300 hover:text-primary-600'
                     )}
                   >
                     {cat}
@@ -600,21 +836,20 @@ export default function DashboardPage() {
             </div>
 
             {/* Meeting Recorder */}
-            <div className="p-4 bg-purple-50/50 rounded-lg border border-purple-100">
-              <h3 className="text-sm font-medium text-gray-900 mb-1">Meeting Recorder</h3>
-              <p className="text-xs text-gray-500 mb-3">
-                Record elder board meetings or upload audio files (MP3, WAV, M4A). AI generates
-                minutes and action items automatically.
+            <div className="p-4 rounded-xl border border-sky-100 bg-gradient-to-br from-sky-50/50 to-indigo-50/30">
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">Meeting Recorder</h3>
+              <p className="text-xs text-slate-500 mb-3">
+                Record elder board meetings or upload audio files. AI generates minutes and action items.
               </p>
               <div className="flex items-center gap-3">
                 <a
                   href="/dashboard/meeting-recorder"
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-sky-600 text-white hover:bg-sky-700 transition-colors shadow-sm cursor-pointer"
                 >
                   <Mic className="w-4 h-4" />
                   Start Recording
                 </a>
-                <button className="px-4 py-2 text-sm font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-gray-700">
+                <button className="px-4 py-2.5 text-sm font-semibold border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors text-slate-700 cursor-pointer">
                   Upload Audio
                 </button>
               </div>
@@ -624,80 +859,92 @@ export default function DashboardPage() {
       </div>
 
       {/* ================================================================== */}
-      {/* 7. ELDER BOARD / LEADERSHIP TEAM                                    */}
+      {/* 8. ELDER BOARD / LEADERSHIP TEAM                                   */}
       {/* ================================================================== */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-card animate-in-delay-4">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-purple-50">
-              <ClipboardCheck className="w-5 h-5 text-purple-600" />
+            <div className="p-2.5 rounded-xl bg-indigo-100">
+              <ClipboardCheck className="w-5 h-5 text-indigo-600" />
             </div>
-            <h2 className="text-lg font-semibold text-gray-900">Elder Board / Leadership Team</h2>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Elder Board / Leadership Team</h2>
+              <p className="text-xs text-slate-500">Governing body of the trust</p>
+            </div>
           </div>
           <a
             href="/dashboard/trustees"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-purple-500 text-white hover:bg-purple-600 transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Add Elder
           </a>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {LEADERSHIP_TEAM.map((elder, i) => (
-            <div
-              key={i}
-              className="p-5 border border-gray-200 rounded-xl hover:shadow-md transition-shadow"
-            >
-              {/* Header */}
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold bg-purple-500 flex-shrink-0">
-                  {elder.name === 'To Be Appointed'
-                    ? '?'
-                    : elder.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .slice(0, 2)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{elder.name}</p>
-                  <p className="text-sm text-purple-600">{elder.role}</p>
-                </div>
-                <span
-                  className={cn(
-                    'px-2 py-1 text-xs font-medium rounded-full flex-shrink-0',
-                    elder.status === 'Active'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                  )}
-                >
-                  {elder.status}
-                </span>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {LEADERSHIP_TEAM.map((elder, i) => {
+            const colors = ICON_COLOR_MAP[elder.color]
+            return (
+              <div
+                key={i}
+                className="relative p-5 border border-slate-200 rounded-2xl hover:shadow-card-hover transition-all hover:-translate-y-0.5"
+              >
+                {/* Color accent */}
+                <div className={cn('absolute top-0 left-0 right-0 h-1 rounded-t-2xl', {
+                  'bg-gradient-to-r from-primary-500 to-primary-700': elder.color === 'purple',
+                  'bg-gradient-to-r from-emerald-500 to-emerald-700': elder.color === 'emerald',
+                  'bg-gradient-to-r from-amber-500 to-amber-700': elder.color === 'amber',
+                })} />
 
-              {/* Bio */}
-              <p className="mt-3 text-xs text-gray-500 leading-relaxed line-clamp-2">
-                {elder.bio}
-              </p>
+                {/* Header */}
+                <div className="flex items-start gap-4 mt-1">
+                  <div className={cn(
+                    'w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold flex-shrink-0',
+                    {
+                      'bg-gradient-to-br from-primary-500 to-primary-700': elder.color === 'purple',
+                      'bg-gradient-to-br from-emerald-500 to-emerald-700': elder.color === 'emerald',
+                      'bg-gradient-to-br from-amber-400 to-amber-600': elder.color === 'amber',
+                    }
+                  )}>
+                    {elder.name === 'To Be Appointed'
+                      ? '?'
+                      : elder.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{elder.name}</p>
+                    <p className={cn('text-sm', colors.text)}>{elder.role}</p>
+                  </div>
+                  <span className={cn(
+                    'px-2.5 py-1 text-xs font-semibold rounded-full flex-shrink-0',
+                    elder.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                  )}>
+                    {elder.status}
+                  </span>
+                </div>
 
-              {/* Contact details */}
-              <div className="mt-4 space-y-2 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span className="truncate">{elder.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span>{elder.phone}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span>Joined {elder.joined}</span>
+                {/* Bio */}
+                <p className="mt-3 text-xs text-slate-500 leading-relaxed line-clamp-2">
+                  {elder.bio}
+                </p>
+
+                {/* Contact details */}
+                <div className="mt-4 space-y-2 text-sm text-slate-600">
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <span className="truncate text-xs">{elder.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <span className="text-xs">{elder.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <span className="text-xs">Joined {elder.joined}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>
@@ -705,7 +952,21 @@ export default function DashboardPage() {
 }
 
 // ---------------------------------------------------------------------------
-// Stat Card Component
+// Recharts Custom Tooltip
+// ---------------------------------------------------------------------------
+
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number }>; label?: string }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-lg px-4 py-3">
+      <p className="text-xs font-semibold text-slate-900">{label}</p>
+      <p className="text-sm font-bold text-primary-600 mt-1">{formatCurrency(payload[0].value)}</p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Stat Card Component - Multi-color
 // ---------------------------------------------------------------------------
 
 function StatCard({
@@ -714,33 +975,39 @@ function StatCard({
   value,
   subtitle,
   loading,
+  color,
+  trend,
 }: {
   icon: typeof DollarSign
   title: string
   value: string | null
   subtitle: string
   loading: boolean
+  color: keyof typeof ICON_COLOR_MAP
+  trend?: string
 }) {
+  const colors = ICON_COLOR_MAP[color]
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow">
+    <div className={cn('stat-card', `stat-card-${color}`)}>
       <div className="flex items-center justify-between mb-3">
-        <div className="p-2 rounded-lg bg-purple-50">
-          <Icon className="w-5 h-5 text-purple-600" />
+        <div className={cn('p-2.5 rounded-xl', colors.bg)}>
+          <Icon className={cn('w-5 h-5', colors.text)} />
         </div>
-        <span className="text-xs font-medium flex items-center gap-1 text-purple-600">
-          <TrendingUp className="w-3 h-3" />
-          Active
-        </span>
+        {trend && (
+          <span className="text-xs font-semibold flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+            <TrendingUp className="w-3 h-3" />
+            {trend}
+          </span>
+        )}
       </div>
       {loading ? (
         <div className="flex items-center gap-2 mt-1">
-          <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-          <span className="text-sm text-gray-400">Loading...</span>
+          <div className="h-7 w-24 rounded-lg shimmer" />
         </div>
       ) : (
         <>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          <p className="text-sm text-gray-500">{subtitle}</p>
+          <p className="text-2xl font-bold text-slate-900 tracking-tight">{value}</p>
+          <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
         </>
       )}
     </div>
@@ -748,7 +1015,7 @@ function StatCard({
 }
 
 // ---------------------------------------------------------------------------
-// Quick Action Card Component
+// Quick Action Card Component - Multi-color
 // ---------------------------------------------------------------------------
 
 function QuickActionCard({
@@ -756,22 +1023,74 @@ function QuickActionCard({
   label,
   description,
   href,
+  color,
 }: {
   icon: typeof Plus
   label: string
   description: string
   href: string
+  color: keyof typeof ICON_COLOR_MAP
 }) {
+  const colors = ICON_COLOR_MAP[color]
   return (
     <a
       href={href}
-      className="bg-white rounded-xl border border-gray-200 p-4 text-left hover:border-purple-300 hover:shadow-sm transition-all block group"
+      className={cn(
+        'bg-white rounded-xl border border-slate-200 p-4 text-left transition-all block group hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer',
+        colors.border
+      )}
     >
-      <div className="p-2 rounded-lg inline-block mb-3 bg-purple-50 group-hover:bg-purple-100 transition-colors">
-        <Icon className="w-5 h-5 text-purple-600" />
+      <div className={cn('p-2.5 rounded-xl inline-block mb-3 transition-colors', colors.bg, `group-${colors.hover}`)}>
+        <Icon className={cn('w-5 h-5', colors.text)} />
       </div>
-      <p className="text-sm font-medium text-gray-900">{label}</p>
-      <p className="text-xs text-gray-500">{description}</p>
+      <p className="text-sm font-semibold text-slate-900">{label}</p>
+      <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+    </a>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Program Card Component
+// ---------------------------------------------------------------------------
+
+function ProgramCard({
+  icon: Icon,
+  title,
+  description,
+  href,
+  color,
+  stats,
+}: {
+  icon: typeof Heart
+  title: string
+  description: string
+  href: string
+  color: keyof typeof ICON_COLOR_MAP
+  stats: string
+}) {
+  const colors = ICON_COLOR_MAP[color]
+  return (
+    <a
+      href={href}
+      className={cn(
+        'bg-white rounded-2xl border border-slate-200 p-5 transition-all block group hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer',
+        colors.border
+      )}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className={cn('p-3 rounded-xl', colors.bg)}>
+          <Icon className={cn('w-6 h-6', colors.text)} />
+        </div>
+        <span className={cn('px-2.5 py-1 text-xs font-semibold rounded-full', colors.bg, colors.text)}>
+          {stats}
+        </span>
+      </div>
+      <h3 className="text-base font-bold text-slate-900 group-hover:text-primary-700 transition-colors">
+        {title}
+      </h3>
+      <p className="text-xs text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+        {description}
+      </p>
     </a>
   )
 }
@@ -782,9 +1101,9 @@ function QuickActionCard({
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-      <span className="text-sm text-gray-500">{label}</span>
-      <span className="text-sm font-medium text-gray-900">{value}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+      <span className="text-sm text-slate-500">{label}</span>
+      <span className="text-sm font-semibold text-slate-900">{value}</span>
     </div>
   )
 }

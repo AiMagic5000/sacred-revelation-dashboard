@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --foreground: #171717;
-  --background: #f5f5f5;
+  --foreground: #0F172A;
+  --background: #F8FAFC;
 }
 
 * {
@@ -19,103 +19,251 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: 'Inter', system-ui, sans-serif;
-  background-color: #f5f5f5;
-  color: #171717;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #F8FAFC;
+  color: #0F172A;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #e5e5e5;
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #a3a3a3;
-  border-radius: 4px;
+  background: #CBD5E1;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #737373;
+  background: #94A3B8;
 }
 
-/* Gradient Classes - Sacred Revelation Purple/Gold */
-.gradient-primary {
-  background: linear-gradient(135deg, #6B21A8, #581C87);
+/* Selection */
+::selection {
+  background: rgba(124, 58, 237, 0.2);
+  color: #3B0764;
 }
 
-.gradient-secondary {
-  background: linear-gradient(135deg, #D4A84B, #B8860B);
-}
-
-.gradient-accent {
-  background: linear-gradient(135deg, #6B21A8, #312E81);
+@layer base {
+  /* Smooth transitions for all interactive elements */
+  a, button, input, select, textarea {
+    @apply transition-all duration-200;
+  }
 }
 
 @layer components {
-  /* Card Styles */
+  /* ================================================= */
+  /* CARD SYSTEM - Multi-color gradient top borders    */
+  /* ================================================= */
+
   .card {
-    @apply bg-white rounded-2xl border border-light-300 p-6 shadow-sm transition-all duration-300 hover:shadow-md;
+    @apply bg-white rounded-2xl border border-slate-200 p-6 shadow-card transition-all duration-300 hover:shadow-card-hover;
   }
 
-  /* Stat Card with gradient top border */
+  .card-interactive {
+    @apply bg-white rounded-2xl border border-slate-200 p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  /* Gradient-top stat cards - each with a different accent */
   .stat-card {
-    @apply relative overflow-hidden bg-white rounded-2xl border border-light-300 p-6 shadow-sm transition-all duration-300 hover:shadow-md;
+    @apply relative overflow-hidden bg-white rounded-2xl border border-slate-200 p-6 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5;
   }
 
-  .stat-card::before {
+  .stat-card-purple::before {
     content: '';
-    @apply absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary-800 to-primary-600;
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #7C3AED, #A855F7);
   }
 
-  /* Sidebar Styles */
-  .sidebar {
-    @apply bg-white border-r border-light-300;
+  .stat-card-emerald::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #059669, #34D399);
   }
 
-  /* Button Styles */
+  .stat-card-amber::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #D97706, #FBBF24);
+  }
+
+  .stat-card-rose::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #E11D48, #FB7185);
+  }
+
+  .stat-card-sky::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #0284C7, #38BDF8);
+  }
+
+  .stat-card-teal::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #0D9488, #2DD4BF);
+  }
+
+  .stat-card-gold::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #B8860B, #D4A84B);
+  }
+
+  .stat-card-indigo::before {
+    content: '';
+    @apply absolute top-0 left-0 h-1 w-full;
+    background: linear-gradient(90deg, #4338CA, #818CF8);
+  }
+
+  /* ================================================= */
+  /* GRADIENT CLASSES                                   */
+  /* ================================================= */
+
+  .gradient-primary {
+    background: linear-gradient(135deg, #7C3AED, #4338CA);
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, #581C87 0%, #7C3AED 25%, #4338CA 50%, #312E81 100%);
+  }
+
+  .gradient-warm {
+    background: linear-gradient(135deg, #7C3AED 0%, #D4A84B 100%);
+  }
+
+  .gradient-sacred {
+    background: linear-gradient(135deg, #3B0764, #7C3AED, #581C87);
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  .gradient-emerald {
+    background: linear-gradient(135deg, #059669, #10B981);
+  }
+
+  .gradient-rose {
+    background: linear-gradient(135deg, #E11D48, #F43F5E);
+  }
+
+  .gradient-sky {
+    background: linear-gradient(135deg, #0284C7, #0EA5E9);
+  }
+
+  .gradient-amber {
+    background: linear-gradient(135deg, #D97706, #F59E0B);
+  }
+
+  .gradient-teal {
+    background: linear-gradient(135deg, #0D9488, #14B8A6);
+  }
+
+  .gradient-mesh-bg {
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(212, 168, 75, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+  }
+
+  /* ================================================= */
+  /* ICON CONTAINERS - Colorful backgrounds            */
+  /* ================================================= */
+
+  .icon-container {
+    @apply flex items-center justify-center rounded-xl p-2.5 transition-colors;
+  }
+
+  .icon-purple { @apply bg-primary-100 text-primary-700; }
+  .icon-emerald { @apply bg-emerald-100 text-emerald-700; }
+  .icon-amber { @apply bg-amber-100 text-amber-700; }
+  .icon-rose { @apply bg-rose-100 text-rose-700; }
+  .icon-sky { @apply bg-sky-100 text-sky-700; }
+  .icon-teal { @apply bg-teal-100 text-teal-700; }
+  .icon-gold { @apply bg-gold-100 text-gold-700; }
+  .icon-indigo { @apply bg-indigo-100 text-indigo-700; }
+
+  /* ================================================= */
+  /* BUTTONS                                            */
+  /* ================================================= */
+
   .btn {
-    @apply rounded-lg px-4 py-2 font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer;
   }
 
   .btn-primary {
-    @apply bg-primary-800 text-white rounded-lg px-4 py-2 font-medium transition-all duration-200 hover:bg-primary-900 focus:outline-none focus:ring-2 focus:ring-primary-800 focus:ring-offset-2;
+    @apply bg-primary-700 text-white rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-primary-700 focus:ring-offset-2 shadow-sm hover:shadow-md cursor-pointer;
+  }
+
+  .btn-gold {
+    @apply bg-gold-500 text-white rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 hover:bg-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2 shadow-sm hover:shadow-md cursor-pointer;
+  }
+
+  .btn-emerald {
+    @apply bg-emerald-600 text-white rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 shadow-sm hover:shadow-md cursor-pointer;
   }
 
   .btn-secondary {
-    @apply bg-secondary-500 text-white rounded-lg px-4 py-2 font-medium transition-all duration-200 hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-secondary-500 focus:ring-offset-2;
+    @apply bg-slate-100 text-slate-700 rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 cursor-pointer;
   }
 
   .btn-ghost {
-    @apply bg-transparent text-light-700 rounded-lg px-4 py-2 font-medium transition-all duration-200 hover:bg-light-200 hover:text-light-900 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply bg-transparent text-slate-600 rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer;
   }
 
   .btn-outline {
-    @apply border border-light-300 text-light-700 rounded-lg px-4 py-2 font-medium transition-all duration-200 hover:bg-light-100 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply border-2 border-slate-200 text-slate-700 rounded-xl px-5 py-2.5 font-semibold transition-all duration-200 hover:bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer;
   }
 
-  /* Input Styles */
+  /* ================================================= */
+  /* INPUT / FORM                                       */
+  /* ================================================= */
+
   .input {
-    @apply w-full rounded-lg border border-light-300 bg-white px-4 py-3 text-light-900 placeholder-light-500 transition-all duration-200 focus:border-primary-800 focus:outline-none focus:ring-2 focus:ring-primary-800;
+    @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 transition-all duration-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20;
   }
 
-  /* Table Row Styles */
+  /* ================================================= */
+  /* SIDEBAR                                            */
+  /* ================================================= */
+
+  .sidebar {
+    @apply bg-white border-r border-slate-200;
+  }
+
+  .menu-item {
+    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-slate-500 transition-all duration-200 hover:bg-slate-50 hover:text-slate-900 cursor-pointer;
+  }
+
+  .menu-item-active {
+    @apply flex items-center gap-3 rounded-xl px-4 py-3 bg-primary-50 text-primary-700 font-semibold transition-all duration-200 cursor-pointer;
+  }
+
+  /* ================================================= */
+  /* TABLE                                              */
+  /* ================================================= */
+
   .table-row {
-    @apply border-b border-light-200 transition-colors hover:bg-light-100;
+    @apply border-b border-slate-100 transition-colors hover:bg-slate-50/50;
   }
 
-  /* Badge Styles */
+  /* ================================================= */
+  /* BADGES - Multi-color                              */
+  /* ================================================= */
+
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
   }
 
   .badge-success {
-    @apply bg-primary-100 text-primary-900;
+    @apply bg-emerald-100 text-emerald-700;
   }
 
   .badge-warning {
@@ -123,40 +271,75 @@ body {
   }
 
   .badge-error {
-    @apply bg-red-100 text-red-700;
+    @apply bg-rose-100 text-rose-700;
   }
 
   .badge-info {
-    @apply bg-secondary-100 text-secondary-700;
+    @apply bg-sky-100 text-sky-700;
   }
 
-  /* Menu Item Styles */
-  .menu-item {
-    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-light-600 transition-all duration-200 hover:bg-light-100 hover:text-light-900;
+  .badge-purple {
+    @apply bg-primary-100 text-primary-700;
   }
 
-  .menu-item-active {
-    @apply flex items-center gap-3 rounded-xl px-4 py-3 bg-primary-50 text-primary-800 font-medium transition-all duration-200;
+  .badge-gold {
+    @apply bg-gold-100 text-gold-700;
   }
 
-  /* Progress Bar */
+  .badge-teal {
+    @apply bg-teal-100 text-teal-700;
+  }
+
+  /* ================================================= */
+  /* PROGRESS BAR                                       */
+  /* ================================================= */
+
   .progress-bar {
-    @apply h-2 overflow-hidden rounded-full bg-light-200;
+    @apply h-2.5 overflow-hidden rounded-full bg-slate-100;
   }
 
   .progress-fill {
-    @apply h-full rounded-full transition-all duration-500;
+    @apply h-full rounded-full transition-all duration-700 ease-out;
   }
 
-  /* Animation */
+  .progress-purple { @apply bg-primary-500; }
+  .progress-emerald { @apply bg-emerald-500; }
+  .progress-amber { @apply bg-amber-500; }
+  .progress-rose { @apply bg-rose-500; }
+  .progress-sky { @apply bg-sky-500; }
+
+  /* ================================================= */
+  /* ANIMATIONS                                        */
+  /* ================================================= */
+
   .animate-in {
-    animation: fadeIn 0.5s ease-out forwards;
+    animation: fadeUp 0.5s ease-out forwards;
   }
 
-  @keyframes fadeIn {
+  .animate-in-delay-1 {
+    animation: fadeUp 0.5s ease-out 0.1s forwards;
+    opacity: 0;
+  }
+
+  .animate-in-delay-2 {
+    animation: fadeUp 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .animate-in-delay-3 {
+    animation: fadeUp 0.5s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .animate-in-delay-4 {
+    animation: fadeUp 0.5s ease-out 0.4s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
     from {
       opacity: 0;
-      transform: translateY(10px);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
@@ -164,13 +347,108 @@ body {
     }
   }
 
-  /* Chart Tooltip */
-  .chart-tooltip {
-    @apply rounded-lg border border-light-300 bg-white p-3 shadow-lg;
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
   }
 
-  /* Dashboard Grid */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* Shimmer loading placeholder */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      #F1F5F9 25%,
+      #E2E8F0 50%,
+      #F1F5F9 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  /* Floating animation for decorative elements */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* ================================================= */
+  /* CHART TOOLTIP                                      */
+  /* ================================================= */
+
+  .chart-tooltip {
+    @apply rounded-xl border border-slate-200 bg-white p-3 shadow-lg;
+  }
+
+  /* Recharts custom styles */
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: #E2E8F0;
+  }
+
+  .recharts-tooltip-wrapper {
+    outline: none;
+  }
+
+  /* ================================================= */
+  /* DASHBOARD GRID                                     */
+  /* ================================================= */
+
   .dashboard-grid {
     @apply grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4;
+  }
+
+  /* ================================================= */
+  /* GLASS EFFECT                                       */
+  /* ================================================= */
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-xl border border-white/10;
+  }
+
+  /* ================================================= */
+  /* SECTION HEADINGS                                   */
+  /* ================================================= */
+
+  .section-heading {
+    @apply text-lg font-bold text-slate-900 tracking-tight;
+  }
+
+  .section-subheading {
+    @apply text-sm text-slate-500 mt-0.5;
+  }
+
+  /* ================================================= */
+  /* REDUCED MOTION                                     */
+  /* ================================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-in,
+    .animate-in-delay-1,
+    .animate-in-delay-2,
+    .animate-in-delay-3,
+    .animate-in-delay-4,
+    .float,
+    .shimmer,
+    .gradient-sacred {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    * {
+      transition-duration: 0.01ms !important;
+    }
   }
 }
