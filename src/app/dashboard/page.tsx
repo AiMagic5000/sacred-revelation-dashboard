@@ -1,7 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
+  Send,
+  Bot,
+  MessageSquare,
+  Loader2 as Spinner,
   DollarSign,
   Users,
   Sparkles,
@@ -281,6 +285,11 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ================================================================== */}
+      {/* 1.5. TRUST ASSISTANT - AI-powered ministry helper                  */}
+      {/* ================================================================== */}
+      <TrustAssistant />
 
       {/* ================================================================== */}
       {/* 2. STATS GRID - Multi-color gradient cards                         */}
@@ -1104,6 +1113,247 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
       <span className="text-sm text-slate-500">{label}</span>
       <span className="text-sm font-semibold text-slate-900">{value}</span>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Trust Assistant Component - AI-powered ministry helper
+// ---------------------------------------------------------------------------
+
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+const SUGGESTED_ACTIONS = [
+  { label: 'Record a donation', icon: DollarSign, color: 'emerald', prompt: 'Help me record a new donation' },
+  { label: 'Check compliance', icon: Shield, color: 'teal', prompt: 'What is my current compliance status and what do I need to do?' },
+  { label: 'Food ministry SOPs', icon: Leaf, color: 'emerald', prompt: 'Walk me through the daily food ministry SOPs' },
+  { label: 'Schedule board meeting', icon: Calendar, color: 'indigo', prompt: 'Help me schedule an elder board meeting' },
+  { label: 'Generate tax receipt', icon: Receipt, color: 'amber', prompt: 'How do I generate tax receipts for donors?' },
+  { label: 'Add a volunteer', icon: UserPlus, color: 'sky', prompt: 'Help me add a new volunteer to the ministry' },
+  { label: 'Trust overview', icon: BookOpen, color: 'purple', prompt: 'Give me an overview of our 508(c)(1)(A) trust status' },
+  { label: 'Financial report', icon: BarChart3, color: 'rose', prompt: 'Help me generate a financial report for the ministry' },
+] as const
+
+function TrustAssistant() {
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
+
+  const sendMessage = useCallback(async (text: string) => {
+    if (!text.trim() || isLoading) return
+
+    const userMessage: ChatMessage = { role: 'user', content: text.trim() }
+    const updatedMessages = [...messages, userMessage]
+    setMessages(updatedMessages)
+    setInput('')
+    setIsLoading(true)
+    setIsExpanded(true)
+
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessages }),
+      })
+
+      if (!res.ok) {
+        throw new Error('Failed to get response')
+      }
+
+      const data = await res.json()
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: data.response || 'I apologize, I was unable to process that. Please try again.',
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'I encountered an error. Please try again or refresh the page.',
+        },
+      ])
+    } finally {
+      setIsLoading(false)
+    }
+  }, [isLoading, messages])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    sendMessage(input)
+  }
+
+  const handleSuggestedAction = (prompt: string) => {
+    sendMessage(prompt)
+  }
+
+  return (
+    <div className="animate-in bg-white rounded-2xl border border-slate-200 shadow-card overflow-hidden">
+      {/* Header */}
+      <div className="p-5 border-b border-slate-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl" style={{
+              background: 'linear-gradient(135deg, #7C3AED, #4338CA)'
+            }}>
+              <Bot className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Trust Assistant</h2>
+              <p className="text-xs text-slate-500">What would you like to accomplish with your trust today?</p>
+            </div>
+          </div>
+          {messages.length > 0 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-xs text-slate-500 hover:text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              {isExpanded ? 'Minimize' : 'Expand'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Suggested Actions - show when no messages */}
+      {messages.length === 0 && (
+        <div className="p-5">
+          <p className="text-sm text-slate-600 mb-3">Choose a task or type your own question:</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {SUGGESTED_ACTIONS.map((action) => {
+              const ActionIcon = action.icon
+              const colors = ICON_COLOR_MAP[action.color]
+              return (
+                <button
+                  key={action.label}
+                  onClick={() => handleSuggestedAction(action.prompt)}
+                  className={cn(
+                    'flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 text-left hover:shadow-sm hover:-translate-y-0.5 transition-all cursor-pointer group',
+                    colors.border
+                  )}
+                >
+                  <div className={cn('p-1.5 rounded-lg flex-shrink-0', colors.bg)}>
+                    <ActionIcon className={cn('w-4 h-4', colors.text)} />
+                  </div>
+                  <span className="text-xs font-medium text-slate-700 group-hover:text-slate-900 leading-tight">
+                    {action.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Chat Messages */}
+      {messages.length > 0 && isExpanded && (
+        <div className="max-h-96 overflow-y-auto p-5 space-y-4">
+          {messages.map((msg, i) => (
+            <div key={i} className={cn('flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+              {msg.role === 'assistant' && (
+                <div className="p-1.5 rounded-lg bg-primary-100 h-fit flex-shrink-0 mt-0.5">
+                  <Bot className="w-4 h-4 text-primary-600" />
+                </div>
+              )}
+              <div className={cn(
+                'max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
+                msg.role === 'user'
+                  ? 'bg-primary-600 text-white rounded-br-md'
+                  : 'bg-slate-50 text-slate-700 border border-slate-100 rounded-bl-md'
+              )}>
+                {msg.content.split('\n').map((line, j) => (
+                  <p key={j} className={j > 0 ? 'mt-2' : ''}>
+                    {line.split('**').map((segment, k) =>
+                      k % 2 === 1 ? (
+                        <strong key={k} className={msg.role === 'user' ? 'text-white' : 'text-slate-900'}>
+                          {segment}
+                        </strong>
+                      ) : (
+                        <span key={k}>{segment}</span>
+                      )
+                    )}
+                  </p>
+                ))}
+              </div>
+              {msg.role === 'user' && (
+                <div className="p-1.5 rounded-lg bg-primary-100 h-fit flex-shrink-0 mt-0.5">
+                  <MessageSquare className="w-4 h-4 text-primary-600" />
+                </div>
+              )}
+            </div>
+          ))}
+
+          {isLoading && (
+            <div className="flex gap-3">
+              <div className="p-1.5 rounded-lg bg-primary-100 h-fit flex-shrink-0">
+                <Bot className="w-4 h-4 text-primary-600" />
+              </div>
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <Spinner className="w-4 h-4 animate-spin" />
+                  Thinking...
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      )}
+
+      {/* Suggested actions when chat is active */}
+      {messages.length > 0 && isExpanded && !isLoading && (
+        <div className="px-5 pb-2">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {SUGGESTED_ACTIONS.slice(0, 4).map((action) => (
+              <button
+                key={action.label}
+                onClick={() => handleSuggestedAction(action.prompt)}
+                className="flex-shrink-0 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="p-4 border-t border-slate-100 bg-slate-50/50">
+        <div className="flex items-center gap-3">
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask me anything about your trust..."
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 bg-white placeholder:text-slate-400 disabled:opacity-50"
+          />
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="p-2.5 rounded-xl text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-sm hover:shadow-md"
+            style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      </form>
     </div>
   )
 }
