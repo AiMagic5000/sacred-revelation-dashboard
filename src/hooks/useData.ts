@@ -136,6 +136,32 @@ export function useElderResolutions(status?: ElderResolutionStatus) {
   return useData<ElderBoardResolution[]>(url)
 }
 
+export function useDocuments(category?: string, search?: string) {
+  const params = new URLSearchParams()
+  if (category && category !== 'all') params.set('category', category)
+  if (search) params.set('search', search)
+  const qs = params.toString()
+  const url = qs ? `/api/documents?${qs}` : '/api/documents'
+  return useData<DocumentRecord[]>(url)
+}
+
+// ============================================
+// DOCUMENT TYPES
+// ============================================
+
+export interface DocumentRecord {
+  id: string
+  organization_id: string
+  name: string
+  type: string
+  file_url: string
+  file_size: number
+  uploaded_by: string
+  category: string
+  storage_path?: string
+  created_at: string
+}
+
 // ============================================
 // EXISTING ENTITY INTERFACES
 // ============================================

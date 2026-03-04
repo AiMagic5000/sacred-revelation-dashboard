@@ -43,6 +43,8 @@ import {
   Star,
   GraduationCap,
   FileText,
+  XCircle,
+  ArrowRight,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -1121,20 +1123,29 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 // Trust Assistant Component - AI-powered ministry helper
 // ---------------------------------------------------------------------------
 
+interface ChatAction {
+  type: string
+  success: boolean
+  data: Record<string, unknown>
+  description: string
+  link?: string
+}
+
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
+  action?: ChatAction
 }
 
 const SUGGESTED_ACTIONS = [
-  { label: 'Record a donation', icon: DollarSign, color: 'emerald', prompt: 'Help me record a new donation' },
+  { label: 'Record a donation', icon: DollarSign, color: 'emerald', prompt: 'Record a $100 tithe donation from a member' },
+  { label: 'Add a volunteer', icon: UserPlus, color: 'sky', prompt: 'Add a new volunteer to the ministry' },
+  { label: 'Log healing session', icon: Heart, color: 'rose', prompt: 'Log a healing prayer session for today' },
+  { label: 'Schedule an event', icon: Calendar, color: 'indigo', prompt: 'Schedule a worship service event for this Sunday' },
+  { label: 'Log food harvest', icon: Leaf, color: 'emerald', prompt: 'Log a food production harvest from the garden' },
   { label: 'Check compliance', icon: Shield, color: 'teal', prompt: 'What is my current compliance status and what do I need to do?' },
-  { label: 'Food ministry SOPs', icon: Leaf, color: 'emerald', prompt: 'Walk me through the daily food ministry SOPs' },
-  { label: 'Schedule board meeting', icon: Calendar, color: 'indigo', prompt: 'Help me schedule an elder board meeting' },
-  { label: 'Generate tax receipt', icon: Receipt, color: 'amber', prompt: 'How do I generate tax receipts for donors?' },
-  { label: 'Add a volunteer', icon: UserPlus, color: 'sky', prompt: 'Help me add a new volunteer to the ministry' },
-  { label: 'Trust overview', icon: BookOpen, color: 'purple', prompt: 'Give me an overview of our 508(c)(1)(A) trust status' },
-  { label: 'Financial report', icon: BarChart3, color: 'rose', prompt: 'Help me generate a financial report for the ministry' },
+  { label: 'Create resolution', icon: FileText, color: 'purple', prompt: 'Create an elder board resolution' },
+  { label: 'Log distribution', icon: HeartHandshake, color: 'amber', prompt: 'Log a food distribution to a family in need' },
 ] as const
 
 function TrustAssistant() {
@@ -1167,7 +1178,9 @@ function TrustAssistant() {
       const res = await fetch('/api/assistant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updatedMessages }),
+        body: JSON.stringify({
+          messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })),
+        }),
       })
 
       if (!res.ok) {
@@ -1178,6 +1191,7 @@ function TrustAssistant() {
       const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: data.response || 'I apologize, I was unable to process that. Please try again.',
+        action: data.action || undefined,
       }
       setMessages((prev) => [...prev, assistantMessage])
     } catch {
@@ -1269,25 +1283,63 @@ function TrustAssistant() {
                   <Bot className="w-4 h-4 text-primary-600" />
                 </div>
               )}
-              <div className={cn(
-                'max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed',
-                msg.role === 'user'
-                  ? 'bg-primary-600 text-white rounded-br-md'
-                  : 'bg-slate-50 text-slate-700 border border-slate-100 rounded-bl-md'
-              )}>
-                {msg.content.split('\n').map((line, j) => (
-                  <p key={j} className={j > 0 ? 'mt-2' : ''}>
-                    {line.split('**').map((segment, k) =>
-                      k % 2 === 1 ? (
-                        <strong key={k} className={msg.role === 'user' ? 'text-white' : 'text-slate-900'}>
-                          {segment}
-                        </strong>
-                      ) : (
-                        <span key={k}>{segment}</span>
-                      )
+              <div className="max-w-[80%]">
+                <div className={cn(
+                  'rounded-2xl px-4 py-3 text-sm leading-relaxed',
+                  msg.role === 'user'
+                    ? 'bg-primary-600 text-white rounded-br-md'
+                    : 'bg-slate-50 text-slate-700 border border-slate-100 rounded-bl-md'
+                )}>
+                  {msg.content.split('\n').map((line, j) => (
+                    <p key={j} className={j > 0 ? 'mt-2' : ''}>
+                      {line.split('**').map((segment, k) =>
+                        k % 2 === 1 ? (
+                          <strong key={k} className={msg.role === 'user' ? 'text-white' : 'text-slate-900'}>
+                            {segment}
+                          </strong>
+                        ) : (
+                          <span key={k}>{segment}</span>
+                        )
+                      )}
+                    </p>
+                  ))}
+                </div>
+                {msg.action && msg.action.success && (
+                  <div className="mt-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span className="text-sm font-medium text-emerald-800">Action completed</span>
+                    </div>
+                    <p className="text-xs text-emerald-600 mt-1">{msg.action.description}</p>
+                    {'receipt_number' in msg.action.data && msg.action.data.receipt_number != null ? (
+                      <p className="text-xs text-emerald-500 mt-0.5">
+                        Receipt: <span className="font-mono font-semibold">{String(msg.action.data.receipt_number)}</span>
+                      </p>
+                    ) : null}
+                    {'id' in msg.action.data && msg.action.data.id != null ? (
+                      <p className="text-xs text-emerald-500 mt-0.5">
+                        Record ID: <span className="font-mono">{String(msg.action.data.id).slice(0, 8)}</span>
+                      </p>
+                    ) : null}
+                    {msg.action.link && (
+                      <a
+                        href={msg.action.link}
+                        className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-emerald-700 hover:text-emerald-900 transition-colors"
+                      >
+                        View in dashboard <ArrowRight className="w-3 h-3" />
+                      </a>
                     )}
-                  </p>
-                ))}
+                  </div>
+                )}
+                {msg.action && !msg.action.success && (
+                  <div className="mt-2 p-3 rounded-xl bg-red-50 border border-red-200">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <span className="text-sm font-medium text-red-800">Action failed</span>
+                    </div>
+                    <p className="text-xs text-red-600 mt-1">{msg.action.description}</p>
+                  </div>
+                )}
               </div>
               {msg.role === 'user' && (
                 <div className="p-1.5 rounded-lg bg-primary-100 h-fit flex-shrink-0 mt-0.5">

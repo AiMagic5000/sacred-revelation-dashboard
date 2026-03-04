@@ -180,6 +180,14 @@ function Navbar({ isSignedIn }: { isSignedIn: boolean }) {
                 {item}
               </a>
             ))}
+            <Link
+              href="/donate"
+              className={`text-sm font-semibold transition-colors ${
+                scrolled ? 'text-purple-700 hover:text-purple-900' : 'text-amber-300 hover:text-amber-200'
+              }`}
+            >
+              Donate
+            </Link>
           </div>
 
           {/* CTA - Auth-aware */}
@@ -641,6 +649,7 @@ function Footer() {
             <div className="space-y-3">
               {[
                 { label: 'Dashboard', href: '/dashboard' },
+                { label: 'Donate', href: '/donate' },
                 { label: 'Sign In', href: '/sign-in' },
                 { label: 'Sign Up', href: '/sign-up' },
                 { label: '508 Services', href: 'https://www.startmybusiness.us/create-a-508-c1a-you-can-put-your-llc-or-corp-into' },
