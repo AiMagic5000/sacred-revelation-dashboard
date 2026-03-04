@@ -136,6 +136,10 @@ export function useElderResolutions(status?: ElderResolutionStatus) {
   return useData<ElderBoardResolution[]>(url)
 }
 
+export function useLocations() {
+  return useData<Location[]>('/api/locations')
+}
+
 export function useDocuments(category?: string, search?: string) {
   const params = new URLSearchParams()
   if (category && category !== 'all') params.set('category', category)
@@ -313,6 +317,35 @@ export interface DashboardStats {
 }
 
 // ============================================
+// LOCATION TYPE
+// ============================================
+
+export type LocationType =
+  | 'Main Sanctuary'
+  | 'Fellowship Hall'
+  | 'Community Center'
+  | 'Office'
+  | 'Storage'
+  | 'Farm/Garden'
+
+export interface Location {
+  id: string
+  organization_id: string
+  name: string
+  address?: string
+  city?: string
+  state?: string
+  zip?: string
+  location_type: LocationType
+  capacity?: number
+  description?: string
+  is_primary: boolean
+  contact_phone?: string
+  created_at: string
+  updated_at: string
+}
+
+// ============================================
 // NEW MINISTRY-SPECIFIC TYPES
 // ============================================
 
@@ -441,4 +474,65 @@ export interface ElderBoardResolution {
   status: ElderResolutionStatus
   created_at: string
   updated_at: string
+}
+
+// ============================================
+// MEMBER / STAFF / TRUSTEE HOOKS
+// ============================================
+
+/**
+ * Members, Staff, and Trustees all store in the volunteers table
+ * using a __type: tag in the skills array as discriminator.
+ * The API routes handle filtering and formatting.
+ */
+
+export interface MemberRecord {
+  id: string
+  organization_id: string
+  name: string
+  email?: string
+  phone?: string
+  skills: string[]
+  status: 'active' | 'inactive'
+  total_hours: number // repurposed as family_size
+  created_at: string
+  updated_at: string
+}
+
+export interface StaffRecord {
+  id: string
+  organization_id: string
+  name: string
+  email?: string
+  phone?: string
+  skills: string[]
+  status: 'active' | 'inactive'
+  total_hours: number
+  created_at: string
+  updated_at: string
+}
+
+export interface TrusteeRecord {
+  id: string
+  organization_id: string
+  name: string
+  email?: string
+  phone?: string
+  skills: string[]
+  status: 'active' | 'inactive'
+  total_hours: number
+  created_at: string
+  updated_at: string
+}
+
+export function useMembers() {
+  return useData<MemberRecord[]>('/api/members')
+}
+
+export function useStaff() {
+  return useData<StaffRecord[]>('/api/staff')
+}
+
+export function useTrustees() {
+  return useData<TrusteeRecord[]>('/api/trustees')
 }

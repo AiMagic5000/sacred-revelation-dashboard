@@ -1,6 +1,7 @@
 // API utility functions for CRUD operations
 
 import type {
+  LocationType,
   BeneficiaryCategory,
   HealingSessionType,
   MusicEventType,
@@ -85,6 +86,14 @@ export const eventsApi = {
   update: (id: string, data: UpdateEventData) =>
     apiPut(`/api/events/${id}`, data),
   delete: (id: string) => apiDelete(`/api/events/${id}`),
+}
+
+// Location API
+export const locationsApi = {
+  create: (data: CreateLocationData) => apiPost('/api/locations', data),
+  update: (id: string, data: UpdateLocationData) =>
+    apiPut(`/api/locations/${id}`, data),
+  delete: (id: string) => apiDelete(`/api/locations/${id}`),
 }
 
 // Production API
@@ -218,6 +227,21 @@ export interface CreateEventData {
 
 export interface UpdateEventData extends Partial<CreateEventData> {}
 
+export interface CreateLocationData {
+  name: string
+  address?: string
+  city?: string
+  state?: string
+  zip?: string
+  location_type?: LocationType
+  capacity?: number
+  description?: string
+  is_primary?: boolean
+  contact_phone?: string
+}
+
+export interface UpdateLocationData extends Partial<CreateLocationData> {}
+
 export interface CreateProductionData {
   record_type: 'farm' | 'food'
   title: string
@@ -340,3 +364,67 @@ export interface CreateElderResolutionData {
 
 export interface UpdateElderResolutionData
   extends Partial<CreateElderResolutionData> {}
+
+// ============================================
+// MEMBER / STAFF / TRUSTEE APIs
+// ============================================
+
+export interface CreateMemberData {
+  name: string
+  email?: string
+  phone?: string
+  role?: string
+  status?: 'active' | 'inactive'
+  family_size?: number
+  notes?: string
+}
+
+export interface UpdateMemberData extends Partial<CreateMemberData> {}
+
+export const membersApi = {
+  create: (data: CreateMemberData) => apiPost('/api/members', data),
+  update: (id: string, data: UpdateMemberData) =>
+    apiPut(`/api/members/${id}`, data),
+  delete: (id: string) => apiDelete(`/api/members/${id}`),
+}
+
+export interface CreateStaffData {
+  name: string
+  email?: string
+  phone?: string
+  title?: string
+  department?: string
+  hire_date?: string
+  salary_range?: string
+  status?: 'active' | 'inactive'
+}
+
+export interface UpdateStaffData extends Partial<CreateStaffData> {}
+
+export const staffApi = {
+  create: (data: CreateStaffData) => apiPost('/api/staff', data),
+  update: (id: string, data: UpdateStaffData) =>
+    apiPut(`/api/staff/${id}`, data),
+  delete: (id: string) => apiDelete(`/api/staff/${id}`),
+}
+
+export interface CreateTrusteeData {
+  name: string
+  email?: string
+  phone?: string
+  role?: string
+  appointment_date?: string
+  term_expires?: string
+  responsibilities?: string
+  signature_on_file?: boolean
+  status?: 'active' | 'inactive'
+}
+
+export interface UpdateTrusteeData extends Partial<CreateTrusteeData> {}
+
+export const trusteesApi = {
+  create: (data: CreateTrusteeData) => apiPost('/api/trustees', data),
+  update: (id: string, data: UpdateTrusteeData) =>
+    apiPut(`/api/trustees/${id}`, data),
+  delete: (id: string) => apiDelete(`/api/trustees/${id}`),
+}
