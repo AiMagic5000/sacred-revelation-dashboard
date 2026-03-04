@@ -23,7 +23,7 @@ export async function getCurrentOrganization() {
 
   const supabase = createServerClient()
 
-  // Find or create organization for this user
+  // Find organization for this user
   const { data: org, error } = await supabase
     .from('organizations')
     .select('*')
@@ -31,7 +31,27 @@ export async function getCurrentOrganization() {
     .single()
 
   if (error && error.code === 'PGRST116') {
-    // No organization found, create one
+    // No org found for this user - check for unclaimed seed org
+    const { data: seedOrg } = await supabase
+      .from('organizations')
+      .select('*')
+      .eq('owner_id', 'pending_clerk_user')
+      .single()
+
+    if (seedOrg) {
+      // Claim the seed org for this user
+      const { data: claimed, error: claimError } = await supabase
+        .from('organizations')
+        .update({ owner_id: userId })
+        .eq('id', seedOrg.id)
+        .select()
+        .single()
+
+      if (claimError) throw claimError
+      return claimed
+    }
+
+    // No seed org either - create a fresh one
     const { data: newOrg, error: createError } = await supabase
       .from('organizations')
       .insert({

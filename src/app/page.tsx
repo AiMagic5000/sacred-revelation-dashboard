@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
 import Link from 'next/link'
 import {
   Heart,
@@ -131,7 +133,7 @@ const COLOR_MAP: Record<string, { bg: string; text: string; iconBg: string; bord
 /*  COMPONENTS                                                */
 /* ────────────────────────────────────────────────────────── */
 
-function Navbar() {
+function Navbar({ isSignedIn }: { isSignedIn: boolean }) {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
@@ -180,23 +182,35 @@ function Navbar() {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* CTA - Auth-aware */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/sign-in"
-              className={`text-sm font-medium transition-colors ${
-                scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'
-              }`}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-sm"
-              style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
-            >
-              Get Started
-            </Link>
+            {isSignedIn ? (
+              <Link
+                href="/dashboard"
+                className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-lg hover:shadow-xl animate-pulse-subtle"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className={`text-sm font-medium transition-colors ${
+                    scrolled ? 'text-slate-600 hover:text-slate-900' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-sm"
+                  style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -537,7 +551,7 @@ function TestimonialsSection() {
   )
 }
 
-function CTASection() {
+function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
   return (
     <section className="py-20 lg:py-28 bg-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -548,28 +562,42 @@ function CTASection() {
         </div>
 
         <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">
-          Ready to Join Our Ministry?
+          {isSignedIn ? 'Welcome Back to Your Ministry' : 'Ready to Join Our Ministry?'}
         </h2>
         <p className="text-lg text-slate-500 mb-8 max-w-2xl mx-auto">
-          Whether you want to volunteer, donate, or start your own trust, we welcome you
-          with open arms. Sign up for your free dashboard account to get started.
+          {isSignedIn
+            ? 'Your dashboard is ready. Manage donations, track compliance, and run your ministry programs.'
+            : 'Whether you want to volunteer, donate, or start your own trust, we welcome you with open arms. Sign up for your free dashboard account to get started.'}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/sign-up"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-white shadow-lg hover:shadow-xl transition-all"
-            style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
-          >
-            Create Free Account
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-          <Link
-            href="/sign-in"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-slate-700 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
-          >
-            Sign In to Dashboard
-          </Link>
+          {isSignedIn ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-white shadow-lg hover:shadow-xl transition-all"
+              style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
+            >
+              Open Dashboard
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/sign-up"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-white shadow-lg hover:shadow-xl transition-all"
+                style={{ background: 'linear-gradient(135deg, #7C3AED, #4338CA)' }}
+              >
+                Create Free Account
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/sign-in"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl text-base font-semibold text-slate-700 border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all"
+              >
+                Sign In to Dashboard
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </section>
@@ -659,15 +687,41 @@ function Footer() {
 /* ────────────────────────────────────────────────────────── */
 
 export default function HomePage() {
+  const { isSignedIn, isLoaded } = useAuth()
+  const router = useRouter()
+
+  // Auto-redirect signed-in users to dashboard
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push('/dashboard')
+    }
+  }, [isLoaded, isSignedIn, router])
+
+  // Show loading while checking auth
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center" style={{
+            background: 'linear-gradient(135deg, #7C3AED, #4338CA)'
+          }}>
+            <span className="text-white text-2xl font-bold">&#10014;</span>
+          </div>
+          <p className="mt-4 text-sm font-medium text-slate-500">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <main className="bg-white">
-      <Navbar />
+      <Navbar isSignedIn={!!isSignedIn} />
       <HeroSection />
       <MissionSection />
       <ProgramsSection />
       <TrustSection />
       <TestimonialsSection />
-      <CTASection />
+      <CTASection isSignedIn={!!isSignedIn} />
       <Footer />
     </main>
   )

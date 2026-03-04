@@ -37,6 +37,81 @@ interface Message {
   content: string
 }
 
+// Provider chain: Cloudflare Workers AI (primary) -> Gemini (secondary) -> Fallback
+const CF_ACCOUNT_ID = '82f3c6e0ba2e585cd0fe3492151de1a0'
+
+async function callCloudflareAI(messages: Message[]): Promise<string | null> {
+  const cfApiKey = process.env.CF_API_KEY
+  const cfEmail = process.env.CF_EMAIL
+
+  if (!cfApiKey || !cfEmail) return null
+
+  const cfMessages = [
+    { role: 'system' as const, content: SYSTEM_PROMPT },
+    ...messages.map((m) => ({
+      role: m.role as 'user' | 'assistant',
+      content: m.content,
+    })),
+  ]
+
+  try {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
+      {
+        method: 'POST',
+        headers: {
+          'X-Auth-Email': cfEmail,
+          'X-Auth-Key': cfApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages: cfMessages, max_tokens: 1024 }),
+      }
+    )
+
+    if (!res.ok) return null
+
+    const data = await res.json()
+    if (data?.success && data?.result?.response) {
+      return data.result.response
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+async function callGemini(messages: Message[]): Promise<string | null> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return null
+
+  const geminiMessages = messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }))
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: geminiMessages,
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1024, topP: 0.9 },
+        }),
+      }
+    )
+
+    if (!res.ok) return null
+
+    const data = await res.json()
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text || null
+  } catch {
+    return null
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -46,54 +121,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Messages array is required' }, { status: 400 })
     }
 
-    const apiKey = process.env.GEMINI_API_KEY
-
-    if (!apiKey) {
-      // Fallback: return a helpful static response when no API key is configured
-      return NextResponse.json({
-        response: getFallbackResponse(messages[messages.length - 1]?.content || ''),
-      })
+    // Try providers in order: Cloudflare -> Gemini -> Fallback
+    const cfResponse = await callCloudflareAI(messages)
+    if (cfResponse) {
+      return NextResponse.json({ response: cfResponse })
     }
 
-    // Call Google Gemini API
-    const geminiMessages = messages.map((m) => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    }))
-
-    const geminiPayload = {
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: geminiMessages,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-        topP: 0.9,
-      },
+    const geminiResponse = await callGemini(messages)
+    if (geminiResponse) {
+      return NextResponse.json({ response: geminiResponse })
     }
 
-    const model = 'gemini-2.0-flash'
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
-
-    const geminiRes = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(geminiPayload),
+    // Fallback: smart pattern-matched responses
+    return NextResponse.json({
+      response: getFallbackResponse(messages[messages.length - 1]?.content || ''),
     })
-
-    if (!geminiRes.ok) {
-      const errText = await geminiRes.text()
-      console.error('Gemini API error:', errText)
-      return NextResponse.json({
-        response: getFallbackResponse(messages[messages.length - 1]?.content || ''),
-      })
-    }
-
-    const geminiData = await geminiRes.json()
-    const responseText =
-      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      'I apologize, but I was unable to generate a response. Please try again or rephrase your question.'
-
-    return NextResponse.json({ response: responseText })
   } catch (error) {
     console.error('Assistant API error:', error)
     return NextResponse.json(
@@ -130,5 +172,13 @@ function getFallbackResponse(query: string): string {
     return `Managing volunteers and members is easy!\n\n**To add a volunteer:**\n1. Go to **Volunteers** in the sidebar\n2. Click "Add Volunteer"\n3. Enter their information and availability\n\n**To manage members:**\n1. Go to **Members** in the sidebar\n2. Add new members or update existing records\n3. Track attendance and participation\n\nYou currently have active volunteers serving across your ministry programs.\n\nWould you like to add a new volunteer or member?`
   }
 
-  return `Welcome! I'm your Sacred Revelation Trust Assistant. I can help you with:\n\n1. **Trust Management** - View and update your 508(c)(1)(A) trust data\n2. **Donations** - Record giving, generate tax receipts\n3. **Compliance** - Check IRS 14-factor status, manage documents\n4. **Food Ministry** - Manage aquaponics, gardens, food forest operations\n5. **Elder Board** - Schedule meetings, record minutes, manage governance\n6. **Volunteers & Members** - Add and manage your ministry team\n7. **Financial Reports** - Generate income summaries and giving statements\n\nWhat would you like to work on today? Just type your question or select one of the suggested actions below.`
+  if (q.includes('report') || q.includes('financial') || q.includes('income') || q.includes('expense')) {
+    return `I can help with financial reports!\n\n**To generate a report:**\n1. Go to **Financial Reports** in the sidebar\n2. Select report type: Income Summary, Expense Breakdown, or Giving Statement\n3. Choose a date range\n4. Click "Generate" to create a downloadable PDF\n\n**Available reports:**\n- **Income Summary** - All donations and revenue by category\n- **Expense Breakdown** - Program costs, operations, missions\n- **Giving Statement** - Per-donor giving totals (for tax receipts)\n- **Budget vs Actual** - Track spending against your ministry budget\n\nWould you like to generate a specific report?`
+  }
+
+  if (q.includes('heal') || q.includes('prayer') || q.includes('worship') || q.includes('music')) {
+    return `Your ministry programs are the heart of Sacred Revelation!\n\n**Healing Ministry:**\n- Go to **Healing Ministry** in the sidebar\n- Schedule prayer sessions, track testimonies, manage healing service events\n- 7 session types available\n\n**Music & Worship:**\n- Go to **Music & Worship** in the sidebar\n- Schedule worship services, concerts, praise nights, and recording sessions\n- 7 event types available\n\nBoth programs are tracked on the dashboard and count toward your compliance status.\n\nWould you like to schedule an event or manage a program?`
+  }
+
+  return `Welcome! I'm your Sacred Revelation Trust Assistant. I can help you with:\n\n1. **Trust Management** - View and update your 508(c)(1)(A) trust data\n2. **Donations** - Record giving, generate tax receipts\n3. **Compliance** - Check IRS 14-factor status, manage documents\n4. **Food Ministry** - Manage aquaponics, gardens, food forest operations\n5. **Elder Board** - Schedule meetings, record minutes, manage governance\n6. **Volunteers & Members** - Add and manage your ministry team\n7. **Financial Reports** - Generate income summaries and giving statements\n8. **Ministry Programs** - Healing, worship, life coaching operations\n\nWhat would you like to work on today? Just type your question or select one of the suggested actions above.`
 }
