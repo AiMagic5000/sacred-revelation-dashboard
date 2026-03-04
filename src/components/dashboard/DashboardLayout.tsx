@@ -106,8 +106,6 @@ export function DashboardLayout({
         <Header
           theme={theme}
           onThemeChange={handleThemeChange}
-          userName="Ministry Elder"
-          userEmail="elder@sacredrevelation.org"
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
         />
 
