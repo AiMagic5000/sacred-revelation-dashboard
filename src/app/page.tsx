@@ -134,10 +134,11 @@ const COLOR_MAP: Record<string, { bg: string; text: string; iconBg: string; bord
 /* ────────────────────────────────────────────────────────── */
 
 function Navbar({ isSignedIn }: { isSignedIn: boolean }) {
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled] = useState(true)
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
+    handleScroll()
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
